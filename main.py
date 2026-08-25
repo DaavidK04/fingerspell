@@ -1,3 +1,4 @@
+import math
 import sys
 
 import cv2 as cv
@@ -34,6 +35,17 @@ PINKY_MCP = 17
 PINKY_PIP = 18
 PINKY_DIP = 19
 PINKY_TIP = 20
+THUMB = (THUMB_CMC, THUMB_MCP, THUMB_IP, THUMB_TIP)
+INDEX_FINGER = (INDEX_FINGER_MCP, INDEX_FINGER_PIP, INDEX_FINGER_DIP, INDEX_FINGER_TIP)
+MIDDLE_FINGER = (
+    MIDDLE_FINGER_MCP,
+    MIDDLE_FINGER_PIP,
+    MIDDLE_FINGER_DIP,
+    MIDDLE_FINGER_TIP,
+)
+RING_FINGER = (RING_FINGER_MCP, RING_FINGER_PIP, RING_FINGER_DIP, RING_FINGER_TIP)
+PINKY_FINGER = (PINKY_MCP, PINKY_PIP, PINKY_DIP, PINKY_TIP)
+LONG_FINGERS = (INDEX_FINGER, MIDDLE_FINGER, RING_FINGER, PINKY_FINGER)
 
 
 def select_image():
@@ -74,6 +86,16 @@ def convert_to_pixel(lmark, width, height):
     return (x_pixel, y_pixel)
 
 
+def is_stretched(landmarks, finger, width, height):
+    _mcp, pip, _dip, tip = finger
+    converted_wrist = convert_to_pixel(landmarks[WRIST], width, height)
+    converted_finger_tip = convert_to_pixel(landmarks[tip], width, height)
+    converted_finger_dip = convert_to_pixel(landmarks[pip], width, height)
+    return math.dist(converted_wrist, converted_finger_tip) > math.dist(
+        converted_wrist, converted_finger_dip
+    )
+
+
 selected = select_image()
 
 if not selected:
@@ -90,6 +112,8 @@ else:
     if landmarks is None:
         print("No hand detected")
     else:
+        # print(is_stretched(landmarks[INDEX_FINGER_TIP], landmarks[INDEX_FINGER_PIP], landmarks[WRIST]))
+        print(landmarks[WRIST])
         cv.circle(
             img,
             (convert_to_pixel(landmarks[INDEX_FINGER_TIP], width, height)),
@@ -114,7 +138,8 @@ else:
 
         cv.namedWindow("window", cv.WINDOW_NORMAL)
         cv.imshow("window", annotated_image)
-        print(landmarks)
-
+        # print(is_stretched(landmarks, MIDDLE_FINGER, width, height))
+        for finger in LONG_FINGERS:
+            print(is_stretched(landmarks, finger, width, height))
     cv.waitKey(0)
     cv.destroyAllWindows()
