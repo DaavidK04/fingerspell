@@ -1,4 +1,5 @@
 import sys
+from typing import NamedTuple
 
 import cv2 as cv
 import mediapipe as mp
@@ -6,14 +7,19 @@ from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 from PyQt6.QtWidgets import QApplication, QFileDialog
 
-from gestures import is_stretched
-from landmarks import LONG_FINGERS, PINKY_MCP, THUMB_TIP, WRIST
+from gestures import check_thumb_direction
+from landmarks import PINKY_MCP, THUMB_TIP, WRIST
 
 # create HandLandmarker object
 model_path = "hand_landmarker.task"
 base_options = python.BaseOptions(model_asset_path=model_path)
 options = vision.HandLandmarkerOptions(base_options=base_options, num_hands=1)
 detector = vision.HandLandmarker.create_from_options(options)
+
+
+class Point(NamedTuple):
+    x: int
+    y: int
 
 
 def select_image():
@@ -51,7 +57,7 @@ def recognize_image(selected):
 def convert_to_pixel(lmark, width, height):
     x_pixel = int(lmark.x * width)
     y_pixel = int(lmark.y * height)
-    return (x_pixel, y_pixel)
+    return Point(x_pixel, y_pixel)
 
 
 def convert_all_to_pixel(landmarks, width, height):
@@ -100,7 +106,8 @@ else:
 
         cv.namedWindow("window", cv.WINDOW_NORMAL)
         cv.imshow("window", annotated_image)
-        for finger in LONG_FINGERS:
-            print("stretched", is_stretched(points, finger))
+        # for finger in LONG_FINGERS:
+        # print("stretched", is_stretched(points, finger))
+        print("Daumen: ", check_thumb_direction(points))
     cv.waitKey(0)
     cv.destroyAllWindows()

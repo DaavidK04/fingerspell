@@ -20,3 +20,22 @@ def thumb_ratio(points):
 
 def is_thumb_spread(points):
     return thumb_ratio(points) > THUMB_SPREAD_THRESHOLD
+
+
+def check_thumb_direction(points):
+    # hand_vector_y = points[INDEX_FINGER_MCP].y - points[WRIST].y
+    # thumb_vector_y = points[THUMB_TIP].y - points[WRIST].y
+    is_hand_upright = points[INDEX_FINGER_MCP].y < points[WRIST].y
+
+    if is_hand_upright:
+        if points[THUMB_TIP].y < points[INDEX_FINGER_MCP].y:
+            return "THUMB UP"
+        elif points[THUMB_TIP].y > points[WRIST].y:
+            return "THUMB DOWN"
+    else:
+        if points[THUMB_TIP].y > points[INDEX_FINGER_MCP].y:
+            return "THUMB DOWN"
+        elif points[THUMB_TIP].y < points[WRIST].y:
+            return "THUMB UP"
+
+    return "NEUTRAL OR OTHER"
