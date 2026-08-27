@@ -47,6 +47,8 @@ RING_FINGER = (RING_FINGER_MCP, RING_FINGER_PIP, RING_FINGER_DIP, RING_FINGER_TI
 PINKY_FINGER = (PINKY_MCP, PINKY_PIP, PINKY_DIP, PINKY_TIP)
 LONG_FINGERS = (INDEX_FINGER, MIDDLE_FINGER, RING_FINGER, PINKY_FINGER)
 
+THUMB_SPREAD_THRESHOLD = 0.73
+
 
 def select_image():
     _ = QApplication.instance() or QApplication(sys.argv)
@@ -86,14 +88,25 @@ def convert_to_pixel(lmark, width, height):
     return (x_pixel, y_pixel)
 
 
-def is_stretched(landmarks, finger, width, height):
+def is_stretched(points, finger):
     _mcp, pip, _dip, tip = finger
-    converted_wrist = convert_to_pixel(landmarks[WRIST], width, height)
-    converted_finger_tip = convert_to_pixel(landmarks[tip], width, height)
-    converted_finger_dip = convert_to_pixel(landmarks[pip], width, height)
-    return math.dist(converted_wrist, converted_finger_tip) > math.dist(
-        converted_wrist, converted_finger_dip
-    )
+    return math.dist(points[tip], points[WRIST]) > math.dist(points[pip], points[WRIST])
+
+
+def thumb_ratio(points):
+    wrist_to_pinkymcp_scale = math.dist(points[WRIST], points[PINKY_MCP])
+    thumb_measure = math.dist(points[THUMB_TIP], points[INDEX_FINGER_MCP])
+    ratio = thumb_measure / wrist_to_pinkymcp_scale
+
+    return ratio
+
+
+def is_thumb_spread(points):
+    return thumb_ratio(points) > THUMB_SPREAD_THRESHOLD
+
+
+def convert_all_to_pixel(landmarks, width, height):
+    return [convert_to_pixel(lmark, width, height) for lmark in landmarks]
 
 
 selected = select_image()
@@ -112,25 +125,26 @@ else:
     if landmarks is None:
         print("No hand detected")
     else:
+        points = convert_all_to_pixel(landmarks, width, height)
         # print(is_stretched(landmarks[INDEX_FINGER_TIP], landmarks[INDEX_FINGER_PIP], landmarks[WRIST]))
-        print(landmarks[WRIST])
+        print("landmark:", landmarks[WRIST])
         cv.circle(
             img,
-            (convert_to_pixel(landmarks[INDEX_FINGER_TIP], width, height)),
+            (points[THUMB_TIP]),
             50,
             (0, 0, 255),
             10,
         )
         cv.circle(
             img,
-            (convert_to_pixel(landmarks[MIDDLE_FINGER_TIP], width, height)),
+            (points[PINKY_MCP]),
             50,
             (0, 0, 255),
             10,
         )
         annotated_image = cv.circle(
             img,
-            (convert_to_pixel(landmarks[WRIST], width, height)),
+            (points[WRIST]),
             50,
             (0, 0, 255),
             10,
@@ -140,6 +154,10 @@ else:
         cv.imshow("window", annotated_image)
         # print(is_stretched(landmarks, MIDDLE_FINGER, width, height))
         for finger in LONG_FINGERS:
-            print(is_stretched(landmarks, finger, width, height))
+            print("stretched", is_stretched(points, finger))
+        # print("Distance: %s", math.dist(points[WRIST], points[PINKY_MCP]))
+        _, scale, measure = thumb_ratio(points)
+        print(f"Scale: {scale}")
+        print(f"Measure: {measure}")
     cv.waitKey(0)
     cv.destroyAllWindows()
