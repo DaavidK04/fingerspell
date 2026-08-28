@@ -8,7 +8,6 @@ from mediapipe.tasks.python import vision
 from PyQt6.QtWidgets import QApplication, QFileDialog
 
 from gestures import recognize_gesture
-from landmarks import PINKY_MCP, THUMB_TIP, WRIST
 
 # create HandLandmarker object
 model_path = "hand_landmarker.task"
@@ -64,6 +63,17 @@ def convert_all_to_pixel(landmarks, width, height):
     return [convert_to_pixel(lmark, width, height) for lmark in landmarks]
 
 
+def draw_circle_around_landmarks(points, img):
+    for point in points:
+        cv.circle(
+            img,
+            (point),
+            30,
+            (0, 0, 255),
+            5,
+        )
+
+
 selected = select_image()
 
 if not selected:
@@ -81,30 +91,9 @@ else:
         print("No hand detected")
     else:
         points = convert_all_to_pixel(landmarks, width, height)
-        cv.circle(
-            img,
-            (points[THUMB_TIP]),
-            50,
-            (0, 0, 255),
-            10,
-        )
-        cv.circle(
-            img,
-            (points[PINKY_MCP]),
-            50,
-            (0, 0, 255),
-            10,
-        )
-        annotated_image = cv.circle(
-            img,
-            (points[WRIST]),
-            50,
-            (0, 0, 255),
-            10,
-        )
-
+        draw_circle_around_landmarks(points, img)
         cv.namedWindow("window", cv.WINDOW_NORMAL)
-        cv.imshow("window", annotated_image)
+        cv.imshow("window", img)
         print(recognize_gesture(points))
     cv.waitKey(0)
     cv.destroyAllWindows()
