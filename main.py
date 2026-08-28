@@ -7,7 +7,7 @@ from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 from PyQt6.QtWidgets import QApplication, QFileDialog
 
-from gestures import check_thumb_direction
+from gestures import recognize_gesture
 from landmarks import PINKY_MCP, THUMB_TIP, WRIST
 
 # create HandLandmarker object
@@ -81,7 +81,6 @@ else:
         print("No hand detected")
     else:
         points = convert_all_to_pixel(landmarks, width, height)
-        print("landmark:", landmarks[WRIST])
         cv.circle(
             img,
             (points[THUMB_TIP]),
@@ -106,8 +105,6 @@ else:
 
         cv.namedWindow("window", cv.WINDOW_NORMAL)
         cv.imshow("window", annotated_image)
-        # for finger in LONG_FINGERS:
-        # print("stretched", is_stretched(points, finger))
-        print("Daumen: ", check_thumb_direction(points))
+        print(recognize_gesture(points))
     cv.waitKey(0)
     cv.destroyAllWindows()

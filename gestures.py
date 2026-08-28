@@ -1,6 +1,6 @@
 import math
 
-from landmarks import INDEX_FINGER_MCP, PINKY_MCP, THUMB_TIP, WRIST
+from landmarks import INDEX_FINGER_MCP, LONG_FINGERS, PINKY_MCP, THUMB_TIP, WRIST
 
 THUMB_SPREAD_THRESHOLD = 0.73
 
@@ -39,3 +39,28 @@ def check_thumb_direction(points):
             return "THUMB UP"
 
     return "NEUTRAL OR OTHER"
+
+
+def stretched_fingers(points):
+    return tuple(is_stretched(points, finger) for finger in LONG_FINGERS)
+
+
+def recognize_gesture(points):
+    stretched = stretched_fingers(points)
+    if stretched == (False, True, False, False):
+        return "MIDDLE FINGER"
+    elif stretched == (True, True, False, False):
+        if is_thumb_spread(points):
+            return "SERB"
+        else:
+            return "PEACE"
+    elif stretched == (False, False, False, False):
+        thumb_direction = check_thumb_direction(points)
+        if thumb_direction == "THUMB UP":
+            return "THUMB UP"
+        elif thumb_direction == "THUMB DOWN":
+            return "THUMB DOWN"
+        else:
+            return None
+    else:
+        return None
