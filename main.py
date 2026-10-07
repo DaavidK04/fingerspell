@@ -42,9 +42,10 @@ def check_for_image(img):
     return img is None
 
 
-def recognize_image(selected):
-    image = mp.Image.create_from_file(selected)
-    detection_result = detector.detect(image)
+def recognize_image(image):
+    rgb_frame = convert_bgr_to_rgb(image)
+    mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
+    detection_result = detector.detect(mp_image)
     if not detection_result.hand_landmarks:
         print("no landmarks detected")
         return None
@@ -61,6 +62,10 @@ def convert_to_pixel(lmark, width, height):
 
 def convert_all_to_pixel(landmarks, width, height):
     return [convert_to_pixel(lmark, width, height) for lmark in landmarks]
+
+
+def convert_bgr_to_rgb(image):
+    return cv.cvtColor(image, cv.COLOR_RGB2BGR)
 
 
 def draw_circle_around_landmarks(points, img):
@@ -86,7 +91,7 @@ if check_for_image(img):
     print("No image found. Please check if the path is correct.")
 else:
     height, width = img.shape[:2]
-    landmarks = recognize_image(selected)
+    landmarks = recognize_image(img)
     if landmarks is None:
         print("No hand detected")
     else:
