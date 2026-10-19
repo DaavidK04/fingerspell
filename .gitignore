@@ -219,3 +219,6 @@ __marimo__/
 
 # MediaPipe
 hand_landmarker.task
+
+# Local TLS certificates (mkcert)
+*.pem
