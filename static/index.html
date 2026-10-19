@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="de">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>fingerspell</title>
+	</head>
+	<body>
+		<h1>fingerspell</h1>
+		<video id="camera" autoplay playsinline muted>
+		</video>
+		<script>
+			const video = document.getElementById("camera");
+			async function startCamera() {
+				const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+				video.srcObject = stream;
+			}
+			startCamera();
+		</script>
+	</body>
+</html>
