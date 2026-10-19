@@ -4,10 +4,15 @@
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>fingerspell</title>
+		<style>
+			.invert {
+				transform: scaleX(-1);
+			}
+		</style>
 	</head>
 	<body>
 		<h1>fingerspell</h1>
-		<video id="camera" autoplay playsinline muted>
+		<video class="invert" id="camera" autoplay playsinline muted>
 		</video>
 		<script>
 			const video = document.getElementById("camera");
